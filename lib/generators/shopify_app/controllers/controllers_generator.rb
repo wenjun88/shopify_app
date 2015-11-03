@@ -11,6 +11,16 @@ module ShopifyApp
         end
       end
 
+      def inject_current_shop_helper
+        if host_has_shop_model?
+          inject_into_file(
+            "app/controllers/authenticated_controller.rb",
+            current_shop_helper,
+            after: "layout ShopifyApp.configuration.embedded_app? ? 'embedded_app' : 'application'"
+          )
+        end
+      end
+
       private
 
       def controllers
@@ -24,6 +34,19 @@ module ShopifyApp
           full_path.sub(root, '.').gsub('/./', '/')
         end
       end
+
+      def host_has_shop_model?
+        File.exist? "app/models/shop.rb"
+      end
+
+      def current_shop_helper
+  "\n
+  def current_shop
+    return nil unless session[:shopify]
+    @current_shop ||= Shop.find(session[:shopify])
+  end\n"
+      end
+
     end
   end
 end
