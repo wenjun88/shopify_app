@@ -4,7 +4,10 @@ module ShopifyApp
 
     class_methods do
       def store(session)
-        shop = self.find_or_initialize_by(shopify_domain: session.url)
+        shop = self.find_or_initialize_by(shopify_domain: session.url) do |s|
+          ShopifyAPI::Base.activate_session(session)
+          s.shopify_id = session.shop.id
+        end
         shop.shopify_token = session.token
         shop.save!
         shop.id
