@@ -1,8 +1,10 @@
 require 'test_helper'
 require 'action_controller'
 require 'action_controller/base'
+require 'action_view/testing/resolvers'
 
 class LoginProtectionController < ActionController::Base
+  include ShopifyApp::EmbeddedApp
   include ShopifyApp::LoginProtection
   helper_method :shop_session
 
@@ -170,6 +172,17 @@ class LoginProtectionTest < ActionController::TestCase
       assert_raise ShopifyApp::LoginProtection::ShopifyDomainNotFound do
         get :redirect
       end
+    end
+  end
+
+  test '#fullpage_redirect_to skips rendering layout' do
+    LoginProtectionController.view_paths << ActionView::FixtureResolver.new(
+      'layouts/embedded_app.html.erb' => 'embedded app layout yielding: <%= yield %>'
+    )
+    with_application_test_routes do
+      example_shop = 'shop.myshopify.com'
+      get :redirect, params: { shop: example_shop }
+      assert_no_match 'embedded app layout yielding', response.body
     end
   end
 
