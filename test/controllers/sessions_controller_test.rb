@@ -13,6 +13,7 @@ module ShopifyApp
       @routes = ShopifyApp::Engine.routes
       ShopifyApp::SessionRepository.storage = ShopifyApp::InMemorySessionStore
       ShopifyApp.configuration = nil
+      ShopifyApp.configuration.embedded_app = true
 
       I18n.locale = :en
     end
